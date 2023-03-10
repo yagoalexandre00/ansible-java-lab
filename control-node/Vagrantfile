@@ -1,3 +1,9 @@
+# In case of you're using Windows 10 or superior:
+# vagrant plugin install vagrant-winnfsd
+# Independent on OS you're using
+# vagrant plugin install vagrant-vbguest --plugin-version 0.21
+
+
 Vagrant.configure("2") do |config|
   config.vm.hostname = "control-node"
   config.vm.box = "centos/7"
