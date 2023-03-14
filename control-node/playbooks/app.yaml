@@ -1,0 +1,64 @@
+---
+- name: Set up Java Server Application
+  hosts: app01
+
+  user: vagrant
+  become: yes
+
+  vars:
+    - dbhost: "db01"
+    - dbname: "notes"
+    - dbusername: "notesapp"
+    - dbpassword: "devopsmaonamassa"
+
+  tasks:
+    - name: Setup hosts lab ansible
+      lineinfile:
+        dest: /etc/hosts
+        state: present
+        line: "{{item}}"
+      with_items:
+        - 192.168.56.2 control-node
+        - 192.168.56.3 app01
+        - 192.168.56.4 db01
+    - name: Add app user
+      user:
+        name: app
+        comment: Default app user
+        uid: 23
+    - name: Installing Maven
+      yum:
+        name: maven
+        state: latest
+    - name: Installing Java
+      yum:
+        name: java-1.8.0-openjdk
+        state: latest
+    - name: Creating app directories
+      file:
+        path: /opt/notes
+        state: directory
+        owner: app
+        group: app
+
+    - name: Installing git
+      yum:
+        name: git
+        state: latest
+    - name: Git Clone notes
+      git:
+        repo: "https://github.com/callicoder/spring-boot-mysql-rest-api-tutorial.git"
+        dest: /opt/notes
+        clone: yes
+        force: yes
+    - name: Setup properties file
+      template:
+        src: application.properties
+        dest: /opt/notes/src/main/resources/application.properties
+    - name: Generating app package
+      command: mvn -f /opt/notes/pom.xml
+      become_user: app
+    - name: Setup 
+      template:
+        src: etc/systemd/system/notes.service
+        src: /etc/systemd/system/notes.service
