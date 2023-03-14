@@ -3,7 +3,7 @@
   hosts: db01
 
   user: vagrant
-  beco me: yes
+  become: yes
   vars_files:
     - vars/main.yaml
   vars:
@@ -12,7 +12,10 @@
     - dbpassword: "devopsmaonamassa"
   tasks:
     - name: Set up hosts lab ansible
-      lineinfile: line "{{item}}" path=/etc/hosts
+      lineinfile:
+        dest: /etc/hosts
+        state: present
+        line: "{{item}}"
       with_items:
         - 192.168.56.2 control-node
         - 192.168.56.3 app01
@@ -20,5 +23,3 @@
   roles:
     - configuracao-default-so
     - role: geerlingguy.mysql
-
-
