@@ -1,0 +1,9 @@
+- name: Update of all os packages
+  yum:
+    name: "*"
+    state: latest
+
+- name: Installing git client
+  yum:
+    name: git
+    state: latest
