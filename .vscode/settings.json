@@ -1,5 +1,6 @@
 {
     "yaml.schemas": {
-        "https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/ansible.json#/$defs/playbook": "file:///c%3A/Users/yago.affonso/Documents/vms/ansible-java-lab/control-node/playbooks/db.yaml"
+        "https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/ansible.json#/$defs/playbook": "file:///c%3A/Users/yago.affonso/Documents/vms/ansible-java-lab/control-node/playbooks/db.yaml",
+        "https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/vars.json": "file:///c%3A/Users/yago.affonso/Documents/vms/ansible-java-lab/control-node/playbooks/vars/main.yaml"
     }
 }

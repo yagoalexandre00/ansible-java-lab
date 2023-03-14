@@ -3,7 +3,7 @@
   hosts: db01
 
   user: vagrant
-  become: true
+  beco me: yes
   vars_files:
     - vars/main.yaml
   vars:
