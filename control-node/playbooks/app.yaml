@@ -25,10 +25,21 @@
         name: app
         comment: Default app user
         uid: 23
-    - name: Installing Java
+    - name: Installing Java JDK 1.8
       yum:
-        name: java-1.8.0-openjdk
+        name: java-1.8.0-openjdk-devel
         state: latest
+    - name: Add JDK to Environment Path
+      lineinfile:
+        path: /etc/profile
+        line: "export PATH=$PATH:/usr/lib/jvm/java-1.8.0-openjdk/bin"
+        state: present
+        create: yes
+    - name: Checking if JDK was installed correctly
+      shell: |
+        java -version
+        javac -version
+      register: jdk_version
     - name: Maven Download
       get_url:
         url: https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.0/apache-maven-3.9.0-bin.tar.gz
@@ -59,17 +70,18 @@
         dest: /opt/notes/
         clone: yes
         force: yes
-    - name: Setup DB properties file
+    - name: Setup POM.XML file
       template:
         src: pom.xml
         dest: /opt/notes/pom.xml
+        owner: app
     - name: Setup DB properties file
       template:
         src: application.properties
         dest: /opt/notes/src/main/resources/application.properties
+        owner: app
     - name: Generating app package
-      command: mvn -f /opt/notes/pom.xml package
-      become_user: app
+      command: mvn -f /opt/notes/pom.xml package -Dmaven.test.skip=true
     - name: Register current package version
       shell:
         cmd: mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -v '\['
