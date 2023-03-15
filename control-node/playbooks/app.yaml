@@ -1,10 +1,9 @@
 ---
 - name: Set up Java Server Application
   hosts: app01
-
   user: vagrant
   become: yes
-
+  
   vars:
     - dbhost: "db01"
     - dbname: "notes"
@@ -26,42 +25,60 @@
         name: app
         comment: Default app user
         uid: 23
-    - name: Installing Maven
-      yum:
-        name: maven
-        state: latest
     - name: Installing Java
       yum:
         name: java-1.8.0-openjdk
         state: latest
-    - name: Creating app directories
+    - name: Maven Download
+      get_url:
+        url: https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.1.0/apache-maven-3.1.0-bin.tar.gz
+        dest: /opt/apache-maven-3.1.0-bin.tar.gz
+    - name: Maven's Package Unzip 
+      ansible.builtin.unarchive:
+        src: /opt/apache-maven-3.1.0-bin.tar.gz
+        dest: /opt/
+        remote_src: yes
+    - name: Create link command to mvn
       file:
-        path: /opt/notes
+        src: /opt/apache-maven-3.1.0/bin/mvn
+        dest: /bin/mvn
+        state: link
+    - name: Creating app directory
+      file:
+        path: /opt/notes/
         state: directory
         owner: app
         group: app
+    - name: Installing git client
+      yum:
+        name: git
+        state: latest
     - name: Git Clone notes
       git:
         repo: "https://github.com/callicoder/spring-boot-mysql-rest-api-tutorial.git"
-        dest: /opt/notes
+        dest: /opt/notes/
         clone: yes
         force: yes
-    - name: Setup properties file
+    - name: Setup DB properties file
+      template:
+        src: pom.xml
+        dest: /opt/notes/pom.xml    
+    - name: Setup DB properties file
       template:
         src: application.properties
         dest: /opt/notes/src/main/resources/application.properties
     - name: Generating app package
-      command: mvn -f /opt/notes/pom.xml
+      command: mvn -f /opt/notes/pom.xml package
       become_user: app
     - name: Register current package version  
       shell:
-        cmd: mvn -o -q -Dexec.executable=echo -Dexec.args='${project.version}'
+        cmd: mvn -o -q -Dexec.executable=echo -Dexec.args='${project.version}' exec:exec
         chdir: /opt/notes
       register: app_version
-    - name: Setup 
+    - name: Setup systemd service
       template:
         src: etc/systemd/system/notes.service
-        src: /etc/systemd/system/notes.service
+        dest: /etc/systemd/system/notes.service
         notify: reload daemon
     - name: Starting notes service
       service:
