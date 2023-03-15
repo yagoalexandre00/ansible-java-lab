@@ -3,7 +3,7 @@
   hosts: app01
   user: vagrant
   become: yes
-  
+
   vars:
     - dbhost: "db01"
     - dbname: "notes"
@@ -31,16 +31,16 @@
         state: latest
     - name: Maven Download
       get_url:
-        url: https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.1.0/apache-maven-3.1.0-bin.tar.gz
-        dest: /opt/apache-maven-3.1.0-bin.tar.gz
-    - name: Maven's Package Unzip 
+        url: https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.0/apache-maven-3.9.0-bin.tar.gz
+        dest: /opt/apache-maven-3.9.0-bin.tar.gz
+    - name: Maven's Package Unzip
       ansible.builtin.unarchive:
-        src: /opt/apache-maven-3.1.0-bin.tar.gz
+        src: /opt/apache-maven-3.9.0-bin.tar.gz
         dest: /opt/
         remote_src: yes
     - name: Create link command to mvn
       file:
-        src: /opt/apache-maven-3.1.0/bin/mvn
+        src: /opt/apache-maven-3.9.0/bin/mvn
         dest: /bin/mvn
         state: link
     - name: Creating app directory
@@ -62,7 +62,7 @@
     - name: Setup DB properties file
       template:
         src: pom.xml
-        dest: /opt/notes/pom.xml    
+        dest: /opt/notes/pom.xml
     - name: Setup DB properties file
       template:
         src: application.properties
@@ -70,9 +70,9 @@
     - name: Generating app package
       command: mvn -f /opt/notes/pom.xml package
       become_user: app
-    - name: Register current package version  
+    - name: Register current package version
       shell:
-        cmd: mvn -o -q -Dexec.executable=echo -Dexec.args='${project.version}' exec:exec
+        cmd: mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -v '\['
         chdir: /opt/notes
       register: app_version
     - name: Setup systemd service
@@ -87,13 +87,13 @@
 
   roles:
     - configuracao-default-so
-  
+
   handlers:
     - name: reload app
-      systemd: 
+      systemd:
         state: restarted
         daemon_reload: yes
-        name: 'notes'
+        name: "notes"
     - name: reload daemon
       systemd:
         daemon_reexec: yes
